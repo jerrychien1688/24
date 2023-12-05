@@ -17,16 +17,42 @@
   <canvas id="unity-canvas" tabindex="-1"></canvas>
   <script src="Build/24.loader.js"></script>
   <script>
-    function resizeCanvas() {
-      var canvas = document.getElementById('unity-canvas');
-      var width = window.innerWidth;
-      var height = width / 16 * 9; // Calculate height based on a 16:9 ratio
+    var canvas = document.getElementById('unity-canvas');
+    var defaultWidth = window.innerWidth;
+    var defaultHeight = defaultWidth / 16 * 9; // 16:9 aspect ratio
+    var zoomFactor = 1;
+
+    function resizeCanvas(width, height) {
       canvas.style.width = width + 'px';
       canvas.style.height = height + 'px';
     }
 
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); // Initialize canvas size
+    function resetCanvasSize() {
+      zoomFactor = 1;
+      resizeCanvas(defaultWidth, defaultHeight);
+    }
+
+    function handleWheelEvent(event) {
+      event.preventDefault();
+      zoomFactor += event.deltaY * -0.01;
+      zoomFactor = Math.min(Math.max(.5, zoomFactor), 2);
+      resizeCanvas(defaultWidth * zoomFactor, defaultHeight * zoomFactor);
+    }
+
+    function handleDoubleClickEvent(event) {
+      event.preventDefault();
+      resetCanvasSize();
+    }
+
+    window.addEventListener('resize', function() {
+      defaultWidth = window.innerWidth;
+      defaultHeight = defaultWidth / 16 * 9;
+      resetCanvasSize();
+    });
+
+    canvas.addEventListener('wheel', handleWheelEvent);
+    canvas.addEventListener('dblclick', handleDoubleClickEvent);
+    resizeCanvas(defaultWidth, defaultHeight); // Initialize canvas size
 
     createUnityInstance(document.querySelector("#unity-canvas"), {
       dataUrl: "Build/24.data.unityweb",
